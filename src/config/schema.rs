@@ -1,7 +1,30 @@
+use crate::selector::CssSelector;
 use crate::spider::ExtractionRule;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::Validate;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SelectorConfig {
+    Simple(String),
+    Advanced(CssSelector),
+}
+
+impl Default for SelectorConfig {
+    fn default() -> Self {
+        SelectorConfig::Simple(String::new())
+    }
+}
+
+impl SelectorConfig {
+    pub fn to_query_string(&self) -> String {
+        match self {
+            SelectorConfig::Simple(s) => s.clone(),
+            SelectorConfig::Advanced(css) => css.to_css_string(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct SpiderConfig {
@@ -14,7 +37,7 @@ pub struct SpiderConfig {
     pub start_urls: Vec<String>,
 
     #[serde(default)]
-    pub root_selector: Option<String>,
+    pub root_selector: Option<SelectorConfig>,
 
     #[serde(default)]
     pub extraction_rules: HashMap<String, ExtractionRule>,

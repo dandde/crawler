@@ -12,6 +12,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 
 # Extraction engine
 chadselect = "0.2"
+select = "0.6"
 
 # Serialization
 serde = { version = "1", features = ["derive"] }

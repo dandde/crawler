@@ -10,6 +10,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
 
+use crate::config::schema::SelectorConfig;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ExtractionType {
@@ -20,7 +22,7 @@ pub enum ExtractionType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractionRule {
-    pub selector: String,
+    pub selector: SelectorConfig,
     pub extract: ExtractionType,
 }
 
@@ -39,7 +41,7 @@ pub struct GenericSpider {
     pub name: String,
     pub start_urls: Vec<String>,
     pub client: Client,
-    pub root_selector: Option<String>,
+    pub root_selector: Option<SelectorConfig>,
     pub extraction_rules: HashMap<String, ExtractionRule>,
     pub output_handler: Arc<Mutex<Box<dyn OutputHandler>>>,
 }
@@ -48,7 +50,7 @@ impl GenericSpider {
     pub fn new(
         name: String,
         start_urls: Vec<String>,
-        root_selector: Option<String>,
+        root_selector: Option<SelectorConfig>,
         extraction_rules: HashMap<String, ExtractionRule>,
         output_handler: Box<dyn OutputHandler>,
     ) -> Self {
@@ -79,10 +81,11 @@ impl GenericSpider {
             
             // NOTE: ChadSelect's select(index, query) might need the prefix (css:, xpath:, regex:)
             // We assume rule.selector already has it or we could add a default.
-            let query = if rule.selector.contains(':') {
-                rule.selector.clone()
+            let raw_selector = rule.selector.to_query_string();
+            let query = if raw_selector.contains(':') {
+                raw_selector
             } else {
-                format!("css:{}", rule.selector)
+                format!("css:{}", raw_selector)
             };
 
             let val = cs.select(doc_index, &query);
@@ -128,9 +131,10 @@ impl Spider for GenericSpider {
         
         let mut items = Vec::new();
         
-        if let Some(root) = &self.root_selector {
+        if let Some(root_config) = &self.root_selector {
+            let root = root_config.to_query_string();
             let root_query = if root.contains(':') {
-                root.clone()
+                root
             } else {
                 format!("css:{}", root)
             };
@@ -144,7 +148,8 @@ impl Spider for GenericSpider {
             let mut max_len = 0;
 
             for (field_name, rule) in &self.extraction_rules {
-                let rule_selector = rule.selector.split_once(':').map(|s| s.1).unwrap_or(&rule.selector);
+                let raw_rule = rule.selector.to_query_string();
+                let rule_selector = raw_rule.split_once(':').map(|s| s.1).unwrap_or(&raw_rule);
                 
                 // Try combined selector first: root + space + rule
                 let full_query = format!("{} {}", root_query, rule_selector);

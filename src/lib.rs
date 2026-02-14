@@ -3,6 +3,7 @@ pub mod crawler;
 pub mod error;
 pub mod metrics;
 pub mod output;
+pub mod selector;
 pub mod spider;
 
 pub use crawler::{CrawlerEngine, CrawlerState};
