@@ -1,0 +1,54 @@
+[package]
+name = "crawler"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+
+# Extraction engine
+chadselect = "0.2"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+toml = "0.8"
+
+# Configuration
+config = "0.13"
+validator = { version = "0.16", features = ["derive"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+indicatif-log-bridge = "0.2"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Logging
+log = "0.4"
+env_logger = "0.9"
+
+# Time & URLs
+chrono = "0.4"
+url = "2.5"
+
+# Output formats
+csv = "1.3"
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite"] }
+
+# Async utilities
+async-trait = "0.1"
+futures = "0.3"
+tokio-stream = "0.1"
+
+[dev-dependencies]
+tempfile = "3"
+wiremock = "0.6"
